@@ -32,7 +32,7 @@ monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov',
 monthLengths = [31,28,31,30,31,30,31,31,30,31,30,31]
 ftpFolder = 'ftp://ftp.awi.de/sea_ice/product/cryosat2_smos/v206/nh/'
 
-putOnDropbox = False
+putOnDropbox = True
 
 class RegionCode: 		# Region codes used in CryoSat auxiliary data
 	cab = 1
