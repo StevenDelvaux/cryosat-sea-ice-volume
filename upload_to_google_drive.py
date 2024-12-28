@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 import os
 import os.path
 from googleapiclient.http import MediaFileUpload
+from decouple import config
 
 def get_credentials(SCOPES):
 	creds = None
