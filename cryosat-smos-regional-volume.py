@@ -112,9 +112,14 @@ def download(date):
 	"""
 	Download Cryosat-SMOS ftp file. 
     """
+	
 	filename = getFileName(date)
+	downloadFilename = filename
+	if date.year == 2025 and date.month == 3 and date.day == 25:
+		downloadFilename = getFileName(datetime(date.year, date.month, date.day-1))
+	downloadFilename = downloadFilename.replace(',','%2C')
 	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month)) if (date.year < 2024 or date.year == 2024 and date.month < 6) else 'LATEST'
-	fullFtpPath = ftpFolder + ftpSubfolder + "/" + filename.replace(',','%2C')
+	fullFtpPath = ftpFolder + ftpSubfolder + "/" + downloadFilename
 	localpath = 'data/LATEST/' + filename
 	print('downloading file ', fullFtpPath, localpath)
 	with closing(urllib.request.urlopen(fullFtpPath)) as r:
