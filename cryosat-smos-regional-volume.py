@@ -31,6 +31,7 @@ grid_spacing_km = 25.   # Default EASE grid spacing
 monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 monthLengths = [31,28,31,30,31,30,31,31,30,31,30,31]
 ftpFolder = 'ftp://ftp.awi.de/sea_ice/product/cryosat2_smos/v206/nh/'
+ftpFolderNew = 'ftp://ftp.awi.de/sea_ice/product/cryosat2_smos/v300/nh/'
 
 putOnDropbox = True
 
@@ -94,17 +95,24 @@ def padzeros(n):
     """
 	return str(n) if n >= 10 else '0'+str(n)
 
+def usesNewVersion(date):
+	return date > datetime(2025,10,1)
+
 def getFileName(date):
 	startDate = date - timedelta(days = 3)
 	endDate = date + timedelta(days = 3)
-	return 'W_XX-ESA,SMOS_CS2,NH_25KM_EASE2_' + str(startDate.year) + padzeros(startDate.month) + padzeros(startDate.day)+ '_' + str(endDate.year) + padzeros(endDate.month) + padzeros(endDate.day) + '_' + ('r' if date.year < 2024 or date.year == 2024 and date.month < 6 else 'o') + '_v206_01_l4sit.nc'
+	datestring = str(startDate.year) + padzeros(startDate.month) + padzeros(startDate.day)+ '_' + str(endDate.year) + padzeros(endDate.month) + padzeros(endDate.day) + '_' + ('r' if not usesNewVersion(date) else 'o')
+	if(usesNewVersion(date)):
+		return 'W_XX-ESA,SMOS_CS2_S3A_S3B,NH_12P5KM_EASE2_' + datestring + '_v300_01_l4sit.nc'
+	return 'W_XX-ESA,SMOS_CS2,NH_25KM_EASE2_' + datestring + '_v206_01_l4sit.nc'
+	#ftp://ftp.awi.de/sea_ice/product/cryosat2_smos/v300/nh/W_XX-ESA,SMOS_CS2_S3A_S3B,NH_12P5KM_EASE2_20251015_20251021_o_v300_01_l4sit
 	
 def getGriddedThickness(date):
 	filename = 'data/LATEST/' + getFileName(date)
 	if not os.path.isfile(filename):
 		filename = download(date)
 	f = Dataset(filename, 'r', format="NETCDF4")
-	thicknessData = f.variables['analysis_sea_ice_thickness'][:]
+	thicknessData = f.variables[('analysis_' if not usesNewVersion(date) else '') + 'sea_ice_thickness'][:]
 	f.close()
 	return thicknessData
 
@@ -112,14 +120,14 @@ def download(date):
 	"""
 	Download Cryosat-SMOS ftp file. 
     """
-	
+	print('inside download ' + str(date.year) + padzeros(date.month) + padzeros(date.day))
 	filename = getFileName(date)
 	downloadFilename = filename
 	if date.year == 2025 and date.month == 3 and date.day == 25:
 		downloadFilename = getFileName(datetime(date.year, date.month, date.day-1))
 	downloadFilename = downloadFilename.replace(',','%2C')
-	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month)) if (date.year < 2024 or date.year == 2024 and date.month < 6) else 'LATEST'
-	fullFtpPath = ftpFolder + ftpSubfolder + "/" + downloadFilename
+	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month) + '/') if not usesNewVersion(date) else 'LATEST/' if (date.month == 10 and date.day == 18) else '' # todo temp
+	fullFtpPath = (ftpFolder if not usesNewVersion(date) else ftpFolderNew) + ftpSubfolder + downloadFilename
 	localpath = 'data/LATEST/' + filename
 	print('downloading file ', fullFtpPath, localpath)
 	with closing(urllib.request.urlopen(fullFtpPath)) as r:
@@ -137,6 +145,7 @@ def getLatestDate(csvFileName):
 def downloadNewFiles():
 	dayBeforeYesterday = datetime.today() - timedelta(days = 2)
 	csvFileName = 'cryosat-smos-regional-volume.csv'	
+	
 	dropbox_client.downloadFromDropbox([csvFileName])
 	
 	latestDate = getLatestDate(csvFileName)
@@ -155,7 +164,7 @@ def downloadNewFiles():
 			print('File not found: ', date)
 			break
 		date = date + timedelta(days = 1)
-		csvFile.writerow(dayvol(filename))
+		csvFile.writerow(dayvol(filename, True))
 	outFile.close()
 	date = date - timedelta(days = 1)
 	return date	
@@ -177,11 +186,13 @@ def insertCryosatDataInNsidcMask(cryosatData, day, year, dummyvalue):
 	counter=1000.0
 	rand = (year+day-2000)/200000.0 #random.randrange(1,100000)/10000000.0
 	
-	for i in range(0,432):
-		for j in range(0,432):
+	_,numberOfRows,numberOfColumns = cryosatData.shape
+	isnew = numberOfRows == 864
+	for i in range(0,numberOfRows):
+		for j in range(0,numberOfColumns):
 			v = cryosatData[0,i,j]
-			latitude = lat[i,j]
-			longitude = lon[i,j]
+			latitude = latlarge[i,j] if isnew else lat[i,j]
+			longitude = lonlarge[i,j] if isnew else lon[i,j]
 			rad = 360*sqrt(2)*sin(pi*(90-latitude)/360)
 			y = int(round(landmaskcenter+rad*sin(pi*longitude/180.0)))
 			x = int(round(landmaskcenter+rad*cos(pi*longitude/180.0)))
@@ -470,26 +481,29 @@ def addMasks(landmask, mask, multiplier, dummyvalue):
 
 	return landmask
 	
-def dayvol(filename) :
+def dayvol(filename, isnewversion) :
 	"""
 	Calculate regional volume for a daily gridded thickness file. 
     """	
 	dates = filename.split('_')
-	startstr = dates[5]
-	endstr = dates[6]
-    	
+	startstr = dates[7 if isnewversion else 5]
+	endstr = dates[8 if isnewversion else 6]
+	print('inside dayvol',startstr, endstr)
+	
 	f = Dataset(filename, 'r', format="NETCDF4")
 	
 	# read sea ice concentration, thickness and thickness uncertainty
 	
+	prefix = 'analysis_' if not isnewversion else ''
 	sic = f.variables['sea_ice_concentration'][:].squeeze()
-	sit = f.variables['analysis_sea_ice_thickness'][:]
-	sit_unc = f.variables['analysis_sea_ice_thickness_unc'][:].squeeze()	
+	sit = f.variables[prefix + 'sea_ice_thickness'][:]
+	sit_unc = f.variables[prefix + 'sea_ice_thickness_unc' + ('ertainty' if isnewversion else '')][:].squeeze()	
 	
 	f.close()
 
-	gg = grid_spacing_km**2   # Area of 25km EASE grid
-	gridarea = np.full((432,432), gg)
+	gg = grid_spacing_km**2 * (0.25 if isnewversion else 1)   # Area of 25km EASE grid
+	rows = 864 if isnewversion else 432 
+	gridarea = np.full((rows,rows), gg)
 
 	# Volume
 	per_grid_cell_volume = (sic/100.) * sit * gg
@@ -514,7 +528,8 @@ def dayvol(filename) :
 				entry = round(entry,3)
 				vtotal += entry
 
-				regionCode = getClosestRegionCode(row,col)
+				factor = 2 if numberOfRows == 864 else 1
+				regionCode = getClosestRegionCode(round(row/factor),round(col/factor))
 
 				if regionCode == RegionCode.cab:
 					vcab += entry
@@ -603,6 +618,8 @@ mask = np.loadtxt(open("regional-mask.csv", "rb"), delimiter=",", skiprows=0)
 refmask = np.loadtxt(open("analysis_sea_ice_thickness_20220415.csv", "rb"), delimiter=",", skiprows=0)
 lat = np.loadtxt(open("lat.csv", "rb"), delimiter=",", skiprows=0)
 lon = np.loadtxt(open("lon.csv", "rb"), delimiter=",", skiprows=0)
+latlarge = np.loadtxt(open("latlarge.csv", "rb"), delimiter=",", skiprows=0)
+lonlarge = np.loadtxt(open("lonlarge.csv", "rb"), delimiter=",", skiprows=0)
 
 """
 Alternative way to load the regional mask:

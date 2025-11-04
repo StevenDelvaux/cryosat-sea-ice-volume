@@ -10,30 +10,31 @@ putOnDropbox = True
 def printRegionalVolume(data, ax, col, ymin, ymax, name):
 	regional = data[1:,col]
 	regional = np.array([i.lstrip() for i in regional]).astype(float)
-	padded = np.pad(regional, (177-171, 171+177*14 - regional.shape[0]), 'constant', constant_values=(np.nan,))
-	matrix = padded.reshape((15,177))
+	padded = np.pad(regional, (177-171, 171+177*15 - regional.shape[0]), 'constant', constant_values=(np.nan,))
+	matrix = padded.reshape((16,177))
 	matrix = matrix/1000.0
 	dates = np.arange(1,178)
 	
-	ax.plot(dates, matrix[-15,:], label='2010/11', color=(0.65,0.65,0.65));
-	ax.plot(dates, matrix[-14,:], label='2011/12', color=(0.44,0.19,0.63));
-	ax.plot(dates, matrix[-13,:], label='2012/13', color=(0.0,0.13,0.38));
-	ax.plot(dates, matrix[-12,:], label='2013/14', color=(0,0.44,0.75));
-	ax.plot(dates, matrix[-11,:], label='2014/15', color=(0.0,0.69,0.94));
-	ax.plot(dates, matrix[-10,:], label='2015/16', color=(0,0.69,0.31));
-	ax.plot(dates, matrix[-9,:], label='2016/17', color=(0.57,0.82,0.31));
-	ax.plot(dates, matrix[-8,:], label='2017/18', color=(1.0,0.75,0));
-	ax.plot(dates, matrix[-7,:], label='2018/19', color=(0.9,0.4,0.05));
-	ax.plot(dates, matrix[-6,:], label='2019/20', color=(1.0,0.5,0.5));
-	ax.plot(dates, matrix[-5,:], label='2020/21', color=(0.58,0.54,0.33));
-	ax.plot(dates, matrix[-4,:], label='2021/22', color=(0.4,0,0.2));
-	ax.plot(dates, matrix[-3,:], label='2022/23', color=(0.6,0.6,0.2));
-	ax.plot(dates, matrix[-2,:], label='2023/24', color=(0.7,0.2,0.3));
-	ax.plot(dates, matrix[-1,:], label='2024/25', color=(1.0,0,0), linewidth=3);
+	ax.plot(dates, matrix[-16,:], label='2010/11', color=(0.65,0.65,0.65));
+	ax.plot(dates, matrix[-15,:], label='2011/12', color=(0.44,0.19,0.63));
+	ax.plot(dates, matrix[-14,:], label='2012/13', color=(0.0,0.13,0.38));
+	ax.plot(dates, matrix[-13,:], label='2013/14', color=(0,0.44,0.75));
+	ax.plot(dates, matrix[-12,:], label='2014/15', color=(0.0,0.69,0.94));
+	ax.plot(dates, matrix[-11,:], label='2015/16', color=(0,0.69,0.31));
+	ax.plot(dates, matrix[-10,:], label='2016/17', color=(0.57,0.82,0.31));
+	ax.plot(dates, matrix[-9,:], label='2017/18', color=(1.0,0.75,0));
+	ax.plot(dates, matrix[-8,:], label='2018/19', color=(0.9,0.4,0.05));
+	ax.plot(dates, matrix[-7,:], label='2019/20', color=(1.0,0.5,0.5));
+	ax.plot(dates, matrix[-6,:], label='2020/21', color=(0.58,0.54,0.33));
+	ax.plot(dates, matrix[-5,:], label='2021/22', color=(0.4,0,0.2));
+	ax.plot(dates, matrix[-4,:], label='2022/23', color=(0.6,0.6,0.2));
+	ax.plot(dates, matrix[-3,:], label='2023/24', color=(0.7,0.2,0.3));
+	ax.plot(dates, matrix[-2,:], label='2024/25', color=(0.3,0.2,0.3));
+	ax.plot(dates, matrix[-1,:], label='2025/26', color=(1.0,0,0), linewidth=3);
 	#ax.set_xlabel("day")
 	ax.set_ylabel("Sea ice volume (10$^3\!$ km$^3\!$)")
 	ax.set_title(name)
-	ax.legend(loc=2, prop={'size': 8})#, bbox_to_anchor=(0.75,1))
+	ax.legend(loc=4, prop={'size': 8})#, bbox_to_anchor=(0.75,1))
 	#ax.text(75, .025, 'some text')
 	#ax.text(2.5, 2.5, r'$\mu=115,\ \sigma=15$')
 	ax.axis([0, 177, ymin, ymax])
