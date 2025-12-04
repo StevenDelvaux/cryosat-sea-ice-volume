@@ -126,7 +126,7 @@ def download(date):
 	if date.year == 2025 and date.month == 3 and date.day == 25:
 		downloadFilename = getFileName(datetime(date.year, date.month, date.day-1))
 	downloadFilename = downloadFilename.replace(',','%2C')
-	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month) + '/') if not usesNewVersion(date) else 'LATEST/' if (date.month == 10 and date.day == 18) else '' # todo temp
+	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month) + '/') if not usesNewVersion(date) else 'LATEST/' 
 	fullFtpPath = (ftpFolder if not usesNewVersion(date) else ftpFolderNew) + ftpSubfolder + downloadFilename
 	localpath = 'data/LATEST/' + filename
 	print('downloading file ', fullFtpPath, localpath)
