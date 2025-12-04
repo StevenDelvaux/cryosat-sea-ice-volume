@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   run-script:
-    if: ${{ vars.ENABLE_DAILY_JOB == 'true' }}  
     runs-on: ubuntu-latest
 
     env:
