@@ -87,7 +87,7 @@ def justify(n):
 	"""
 	Transform a number into a string with 2 decimal digits, right justified. 
     """
-	return rounded(n).rjust(8) + ' km³'
+	return rounded(n).rjust(8) + ' kmÂ³'
 
 def padzeros(n):
 	"""
@@ -96,7 +96,7 @@ def padzeros(n):
 	return str(n) if n >= 10 else '0'+str(n)
 
 def usesNewVersion(date):
-	return date > datetime(2025,10,1)
+	return date > datetime(2025,1,1)
 
 def getFileName(date):
 	startDate = date - timedelta(days = 3)
