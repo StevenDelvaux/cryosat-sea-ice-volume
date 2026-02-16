@@ -98,6 +98,9 @@ def padzeros(n):
 def usesNewVersion(date):
 	return date > datetime(2025,1,1)
 
+def usesLatestFolder(date):
+	return date > datetime(2025,9,1)
+
 def getFileName(date):
 	startDate = date - timedelta(days = 3)
 	endDate = date + timedelta(days = 3)
@@ -126,7 +129,7 @@ def download(date):
 	if date.year == 2025 and date.month == 3 and date.day == 25:
 		downloadFilename = getFileName(datetime(date.year, date.month, date.day-1))
 	downloadFilename = downloadFilename.replace(',','%2C')
-	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month) + '/') if not usesNewVersion(date) else 'LATEST/' 
+	ftpSubfolder = (str(date.year) + "/" + padzeros(date.month) + '/') if not usesLatestFolder(date) else 'LATEST/' 
 	fullFtpPath = (ftpFolder if not usesNewVersion(date) else ftpFolderNew) + ftpSubfolder + downloadFilename
 	localpath = 'data/LATEST/' + filename
 	print('downloading file ', fullFtpPath, localpath)
