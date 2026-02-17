@@ -104,7 +104,7 @@ def usesLatestFolder(date):
 def getFileName(date):
 	startDate = date - timedelta(days = 3)
 	endDate = date + timedelta(days = 3)
-	datestring = str(startDate.year) + padzeros(startDate.month) + padzeros(startDate.day)+ '_' + str(endDate.year) + padzeros(endDate.month) + padzeros(endDate.day) + '_' + ('r' if not usesNewVersion(date) else 'o')
+	datestring = str(startDate.year) + padzeros(startDate.month) + padzeros(startDate.day)+ '_' + str(endDate.year) + padzeros(endDate.month) + padzeros(endDate.day) + '_' + ('r' if not usesLatestFolder(date) else 'o')
 	if(usesNewVersion(date)):
 		return 'W_XX-ESA,SMOS_CS2_S3A_S3B,NH_12P5KM_EASE2_' + datestring + '_v300_01_l4sit.nc'
 	return 'W_XX-ESA,SMOS_CS2,NH_25KM_EASE2_' + datestring + '_v206_01_l4sit.nc'
